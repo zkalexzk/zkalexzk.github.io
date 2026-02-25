@@ -263,7 +263,7 @@
 
         <div class="nav-tabs" style="display: flex; gap: 10px; margin-bottom: 30px; border-bottom: 2px solid #e0e0e0;">
             <button class="tab active" style="padding: 12px 24px; background: none; border: none; color: #667eea; font-size: 16px; font-weight: 500; cursor: pointer; border-bottom: 3px solid #667eea;">单个解析</button>
-            <button class="tab" style="padding: 12px 24px; background: none; border: none; color: #666; font-size: 16px; font-weight: 500; cursor: pointer; border-bottom: 3px solid transparent;" onclick="window.location.href='batch-static.html'">批量解析</button>
+            <button class="tab" style="padding: 12px 24px; background: none; border: none; color: #666; font-size: 16px; font-weight: 500; cursor: pointer; border-bottom: 3px solid transparent;" onclick="window.location.href='batch.html'">批量解析</button>
         </div>
 
         <div class="input-group">
@@ -293,6 +293,7 @@
         </div>
     </div>
 
+    <script src="chip-classification.js"></script>
     <script src="chipid-parser.js"></script>
     <script>
         function fillExample(chipid) {
@@ -350,9 +351,21 @@
                 { label: 'Wafer编号:', value: String(data.wafer) },
                 { label: 'X坐标:', value: String(data.x) },
                 { label: 'Y坐标:', value: String(data.y) },
-                { label: 'ECID:', value: data.ecid },
-                { label: '原始CHIPID:', value: data.raw }
+                { label: 'ECID:', value: data.ecid }
             ];
+
+            // 如果有分类信息，添加到字段列表
+            if (data.priority) {
+                fields.push({ label: 'Priority:', value: `${data.priority} - ${ChipClassificationDB.getPriorityDescription(data.priority)}` });
+            }
+            if (data.status) {
+                fields.push({ label: 'Status:', value: data.status });
+            }
+            if (data.description) {
+                fields.push({ label: '说明:', value: data.description });
+            }
+
+            fields.push({ label: '原始CHIPID:', value: data.raw });
 
             fields.forEach(field => {
                 const item = document.createElement('div');

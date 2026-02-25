@@ -58,7 +58,13 @@ class ChipIDParser {
         // 生成ECID: Lot_Wafer(2位)_X_Y
         const ecid = `${lot}_${wafer.toString().padStart(2, '0')}_${x}_${y}`;
 
-        return {
+        // 查询芯片分类信息（如果有ChipClassificationDB）
+        let classification = null;
+        if (typeof ChipClassificationDB !== 'undefined') {
+            classification = ChipClassificationDB.lookup(lot, wafer);
+        }
+
+        const result = {
             lot: lot,
             wafer: wafer,
             x: x,
@@ -66,6 +72,15 @@ class ChipIDParser {
             ecid: ecid,
             raw: chipid
         };
+
+        // 如果找到分类信息，添加到结果中
+        if (classification) {
+            result.priority = classification.priority;
+            result.status = classification.status;
+            result.description = classification.description;
+        }
+
+        return result;
     }
 
     /**

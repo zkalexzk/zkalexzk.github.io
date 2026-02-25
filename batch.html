@@ -294,6 +294,8 @@
                     <th>X</th>
                     <th>Y</th>
                     <th>ECID</th>
+                    <th>Priority</th>
+                    <th>Status</th>
                     <th>原始CHIPID</th>
                     <th>错误信息</th>
                 </tr>
@@ -303,6 +305,7 @@
         </table>
     </div>
 
+    <script src="chip-classification.js"></script>
     <script src="chipid-parser.js"></script>
     <script>
         let currentResults = [];
@@ -381,6 +384,8 @@
                         <td>${d.x}</td>
                         <td>${d.y}</td>
                         <td>${escapeText(d.ecid)}</td>
+                        <td>${d.priority || '-'}</td>
+                        <td>${d.status || '-'}</td>
                         <td>${escapeText(d.raw)}</td>
                         <td>-</td>
                     `;
@@ -388,7 +393,7 @@
                     row.innerHTML = `
                         <td>${result.index}</td>
                         <td class="status-error">✗ 失败</td>
-                        <td colspan="6">${escapeText(result.input || '')}</td>
+                        <td colspan="8">${escapeText(result.input || '')}</td>
                         <td>${escapeText(result.error)}</td>
                     `;
                 }
@@ -406,7 +411,7 @@
         }
 
         function exportCSV() {
-            const rows = [['序号', '状态', 'Lot ID', 'Wafer', 'X', 'Y', 'ECID', '原始CHIPID', '错误信息']];
+            const rows = [['序号', '状态', 'Lot ID', 'Wafer', 'X', 'Y', 'ECID', 'Priority', 'Status', '原始CHIPID', '错误信息']];
 
             currentResults.forEach(result => {
                 if (result.success) {
@@ -419,6 +424,8 @@
                         d.x,
                         d.y,
                         d.ecid,
+                        d.priority || '',
+                        d.status || '',
                         d.raw,
                         ''
                     ]);
@@ -426,6 +433,8 @@
                     rows.push([
                         result.index,
                         '失败',
+                        '',
+                        '',
                         '',
                         '',
                         '',
@@ -447,7 +456,7 @@
 
         function exportExcel() {
             // 简化版：导出为制表符分隔的文本，可在Excel中打开
-            const rows = [['序号', '状态', 'Lot ID', 'Wafer', 'X', 'Y', 'ECID', '原始CHIPID', '错误信息']];
+            const rows = [['序号', '状态', 'Lot ID', 'Wafer', 'X', 'Y', 'ECID', 'Priority', 'Status', '原始CHIPID', '错误信息']];
 
             currentResults.forEach(result => {
                 if (result.success) {
@@ -460,6 +469,8 @@
                         d.x,
                         d.y,
                         d.ecid,
+                        d.priority || '',
+                        d.status || '',
                         d.raw,
                         ''
                     ]);
@@ -467,6 +478,8 @@
                     rows.push([
                         result.index,
                         '失败',
+                        '',
+                        '',
                         '',
                         '',
                         '',
@@ -487,7 +500,7 @@
         }
 
         function copyResults() {
-            const rows = [['序号', '状态', 'Lot ID', 'Wafer', 'X', 'Y', 'ECID', '原始CHIPID', '错误信息']];
+            const rows = [['序号', '状态', 'Lot ID', 'Wafer', 'X', 'Y', 'ECID', 'Priority', 'Status', '原始CHIPID', '错误信息']];
 
             currentResults.forEach(result => {
                 if (result.success) {
@@ -500,6 +513,8 @@
                         d.x,
                         d.y,
                         d.ecid,
+                        d.priority || '',
+                        d.status || '',
                         d.raw,
                         ''
                     ]);
@@ -507,6 +522,8 @@
                     rows.push([
                         result.index,
                         '失败',
+                        '',
+                        '',
                         '',
                         '',
                         '',
