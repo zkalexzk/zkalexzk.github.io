@@ -1,0 +1,883 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ECID Transfer Tool</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Microsoft YaHei', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+            padding: 30px;
+            flex: 1;
+        }
+        
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 30px;
+            font-size: 28px;
+        }
+        
+        .input-section {
+            margin-bottom: 30px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 10px;
+            font-weight: bold;
+            color: #555;
+        }
+        
+        textarea {
+            width: 100%;
+            min-height: 120px;
+            padding: 15px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 14px;
+            font-family: 'Consolas', monospace;
+            resize: vertical;
+            transition: border-color 0.3s;
+        }
+        
+        textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        .button-group {
+            display: flex;
+            gap: 15px;
+            margin-top: 15px;
+        }
+        
+        button {
+            flex: 1;
+            padding: 12px 24px;
+            font-size: 16px;
+            font-weight: bold;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .btn-convert {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        
+        .btn-convert:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+        
+        .btn-clear {
+            background: #f44336;
+            color: white;
+        }
+        
+        .btn-clear:hover {
+            background: #d32f2f;
+            transform: translateY(-2px);
+        }
+        
+        .result-section {
+            margin-top: 30px;
+        }
+        
+        .code-item {
+            background: #f8f9fa;
+            border-left: 4px solid #667eea;
+            padding: 25px;
+            margin-bottom: 25px;
+            border-radius: 8px;
+            animation: fadeIn 0.5s;
+        }
+        
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .code-warning {
+            background: #fff3cd;
+            border-left-color: #ff9800;
+            border: 2px solid #ff9800;
+        }
+        
+        .warning-text {
+            color: #ff6f00;
+            font-weight: bold;
+            margin-bottom: 15px;
+            padding: 10px;
+            background: rgba(255, 152, 0, 0.1);
+            border-radius: 5px;
+        }
+        
+        /* 优化三列布局宽度 */
+        .result-layout {
+            display: grid;
+            grid-template-columns: 250px 1fr 300px;
+            gap: 25px;
+            align-items: start;
+        }
+        
+        /* 统一三列的样式 */
+        .original-code-section,
+        .conversion-section,
+        .ecid-section {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            display: flex;
+            flex-direction: column;
+            height: 100%; /* 确保三列等高 */
+        }
+        
+        /* 统一标题样式 - 固定高度确保对齐 */
+        .section-title {
+            font-size: 16px;
+            font-weight: bold;
+            color: #667eea;
+            padding: 15px 20px;
+            border-bottom: 2px solid #e0e0e0;
+            text-align: center;
+            flex-shrink: 0;
+            position: relative;
+            height: 52px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        /* 转换过程标题内容容器 */
+        .section-title-with-toggle {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+        }
+        
+        /* 箭头按钮 - 绝对定位在标题右侧 */
+        .toggle-btn {
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: transparent;
+            color: #667eea;
+            border: none;
+            cursor: pointer;
+            font-size: 20px;
+            padding: 5px 8px;
+            line-height: 1;
+            transition: all 0.3s;
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 4px;
+        }
+        
+        .toggle-btn:hover {
+            background: rgba(102, 126, 234, 0.1);
+            color: #5568d3;
+        }
+        
+        .toggle-icon {
+            transition: transform 0.3s;
+            display: inline-block;
+            font-size: 16px;
+        }
+        
+        .toggle-icon.rotated {
+            transform: rotate(180deg);
+        }
+        
+        /* 内容区域 */
+        .section-content {
+            padding: 15px 20px;
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            min-height: 80px;
+        }
+        
+        /* 原始代码显示 - 分两行显示 */
+        .original-code-display {
+            font-family: 'Consolas', monospace;
+            font-size: 13px;
+            line-height: 1.8;
+            color: #333;
+            word-break: break-all;
+            background: #f5f5f5;
+            padding: 12px;
+            border-radius: 5px;
+            min-height: 80px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+        
+        .code-line {
+            margin: 2px 0;
+        }
+        
+        /* 字段网格改为4列 */
+        .fields-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+            flex-shrink: 0;
+        }
+        
+        .field-card {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            padding: 12px 8px;
+            border-radius: 6px;
+            text-align: center;
+            transition: transform 0.2s, box-shadow 0.2s;
+            border: 2px solid #e0e0e0;
+        }
+        
+        .field-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+        
+        .field-card.highlight {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-color: #667eea;
+        }
+        
+        .field-card.highlight .field-name,
+        .field-card.highlight .field-value {
+            color: white;
+        }
+        
+        .field-name {
+            font-size: 11px;
+            color: #666;
+            font-weight: 600;
+            margin-bottom: 6px;
+        }
+        
+        .field-value {
+            font-size: 15px;
+            font-weight: bold;
+            color: #333;
+            font-family: 'Consolas', monospace;
+        }
+        
+        /* 展开区域 */
+        .expand-section {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease-out;
+            flex-shrink: 0;
+        }
+        
+        .expand-section.expanded {
+            max-height: 500px;
+            transition: max-height 0.5s ease-in;
+        }
+        
+        .fields-grid-expand {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+            margin-top: 10px;
+            padding-top: 10px;
+            border-top: 1px dashed #ddd;
+        }
+        
+        .ecid-display {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 0;
+            border-radius: 8px;
+            text-align: center;
+            min-height: 80px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .ecid-value {
+            font-size: 19px;
+            font-weight: bold;
+            font-family: 'Consolas', monospace;
+            letter-spacing: 0.8px;
+            word-break: break-all;
+            line-height: 1.4;
+            padding: 0 10px;
+        }
+        
+        .info-box {
+            background: #e3f2fd;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border-left: 4px solid #2196f3;
+        }
+        
+        .info-box h3 {
+            color: #1976d2;
+            margin-bottom: 10px;
+            font-size: 16px;
+        }
+        
+        .info-box ul {
+            margin-left: 20px;
+            color: #555;
+            line-height: 1.8;
+        }
+        
+        .info-box .highlight {
+            color: #d32f2f;
+            font-weight: bold;
+        }
+        
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+            animation: fadeIn 0.3s;
+        }
+        
+        .modal-content {
+            background-color: white;
+            margin: 15% auto;
+            padding: 30px;
+            border-radius: 10px;
+            width: 90%;
+            max-width: 500px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.3);
+            animation: slideIn 0.3s;
+        }
+        
+        @keyframes slideIn {
+            from {
+                transform: translateY(-50px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+        
+        .modal-header {
+            font-size: 20px;
+            font-weight: bold;
+            color: #ff6f00;
+            margin-bottom: 15px;
+        }
+        
+        .modal-body {
+            margin-bottom: 20px;
+            line-height: 1.6;
+            color: #555;
+        }
+        
+        .modal-buttons {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+        }
+        
+        .modal-buttons button {
+            flex: 0 0 auto;
+            padding: 10px 20px;
+        }
+        
+        .btn-confirm {
+            background: #4caf50;
+            color: white;
+        }
+        
+        .btn-cancel {
+            background: #9e9e9e;
+            color: white;
+        }
+        
+        /* 版权信息样式 */
+        .footer {
+            max-width: 1600px;
+            margin: 20px auto 0;
+            padding: 20px 30px;
+            text-align: center;
+        }
+        
+        .footer-content {
+            color: rgba(255, 255, 255, 0.95);
+            font-size: 14px;
+            line-height: 1.8;
+        }
+        
+        .footer-title {
+            font-weight: bold;
+            color: white;
+            margin-bottom: 8px;
+            font-size: 15px;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+        
+        .footer-info {
+            color: rgba(255, 255, 255, 0.85);
+            font-size: 13px;
+            margin-top: 8px;
+            text-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+        }
+        
+        .footer-divider {
+            display: inline-block;
+            margin: 0 8px;
+            color: rgba(255, 255, 255, 0.6);
+        }
+        
+        @media (max-width: 1400px) {
+            .result-layout {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+            
+            .fields-grid {
+                grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+            }
+            
+            .fields-grid-expand {
+                grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔧 ECID Transfer Tool</h1>
+        
+        <div class="info-box">
+            <h3>📋 Instructions</h3>
+            <ul>
+                <li>Please Enter 32-bit Hexadecimal Code (Multiple Codes Supported, <span class="highlight">One Per Line or Separated by Semicolon ";"</span>)</li>
+                <li>Conversion Results are Displayed in Three Columns: <span class="highlight">Original Code | Conversion Process | ECID</span></li>
+                <li><span class="highlight">ECID = LotID_WaferID_DIE_X_DIE_Y</span></li>
+            </ul>
+        </div>
+        
+        <div class="input-section">
+            <label for="hexInput">▶️ Please Enter Hexadecimal Code:</label>
+            <textarea id="hexInput" placeholder="e.g., 5536 4239 3030 1008 000c 0000 0000 0000"></textarea>
+            <div class="button-group">
+                <button class="btn-convert" id="convertBtn">🔄 Convert</button>
+                <button class="btn-clear" id="clearBtn">🗑️ Clear</button>
+            </div>
+        </div>
+        
+        <div class="result-section" id="resultSection"></div>
+    </div>
+    
+    <!-- 版权信息 -->
+    <div class="footer">
+        <div class="footer-content">
+            <div class="footer-title">© 2025 LiAuto DFT Team - ECID Transfer Tool</div>
+            <div class="footer-info">
+                Developed and Maintained by LiAuto DFT Team
+                <span class="footer-divider">|</span>
+                Version 1.0
+                <span class="footer-divider">|</span>
+                For Internal Use Only
+            </div>
+        </div>
+    </div>
+    
+    <div id="warningModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">⚠️ Bit Length Warning</div>
+            <div class="modal-body" id="modalMessage"></div>
+            <div class="modal-buttons">
+                <button class="btn-confirm" id="confirmBtn">Continue</button>
+                <button class="btn-cancel" id="cancelBtn">Cancel</button>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        var currentCode = '';
+        var currentOriginalCode = '';
+        var pendingCodes = [];
+        var processingIndex = 0;
+        var itemCounter = 0;
+        
+        // 清空所有内容
+        function clearAll() {
+            document.getElementById('hexInput').value = '';
+            document.getElementById('resultSection').innerHTML = '';
+            pendingCodes = [];
+            processingIndex = 0;
+            itemCounter = 0;
+        }
+        
+        // 关闭模态框
+        function closeModal() {
+            document.getElementById('warningModal').style.display = 'none';
+            currentCode = '';
+            currentOriginalCode = '';
+            processingIndex++;
+            if (processingIndex < pendingCodes.length) {
+                setTimeout(function() { processNextCode(); }, 100);
+            }
+        }
+        
+        // 确认继续转换
+        function confirmConvert() {
+            var modal = document.getElementById('warningModal');
+            modal.style.display = 'none';
+            
+            if (currentCode) {
+                processCode(currentCode, currentOriginalCode, true);
+            }
+            
+            currentCode = '';
+            currentOriginalCode = '';
+            processingIndex++;
+            
+            if (processingIndex < pendingCodes.length) {
+                setTimeout(function() { processNextCode(); }, 100);
+            }
+        }
+        
+        // 切换展开/收起
+        function toggleExpand(itemId) {
+            var expandSection = document.getElementById('expand-' + itemId);
+            var toggleIcon = document.getElementById('icon-' + itemId);
+            
+            if (expandSection.classList.contains('expanded')) {
+                expandSection.classList.remove('expanded');
+                toggleIcon.classList.remove('rotated');
+            } else {
+                expandSection.classList.add('expanded');
+                toggleIcon.classList.add('rotated');
+            }
+        }
+        
+        // 分割输入的多个代码
+        function splitInput(input) {
+            var result = [];
+            var lines = input.split('\n');
+            for (var i = 0; i < lines.length; i++) {
+                var line = lines[i];
+                var parts = line.split(';');
+                for (var j = 0; j < parts.length; j++) {
+                    var part = parts[j].trim();
+                    if (part.length > 0) {
+                        result.push(part);
+                    }
+                }
+            }
+            return result;
+        }
+        
+        // 移除空格
+        function removeSpaces(str) {
+            return str.replace(/\s+/g, '');
+        }
+        
+        // 格式化代码：每4位加一个空格
+        function formatWithSpaces(str) {
+            var result = '';
+            for (var i = 0; i < str.length; i++) {
+                if (i > 0 && i % 4 === 0) {
+                    result += ' ';
+                }
+                result += str[i];
+            }
+            return result;
+        }
+        
+        // 验证是否为有效的十六进制
+        function isValidHex(str) {
+            var pattern = /^[0-9a-fA-F]+$/;
+            return pattern.test(str) && str.length > 0;
+        }
+        
+        // 格式化原始代码显示（前20位一行，后12位一行，每4位一个空格）
+        function formatOriginalCode(code) {
+            var formatted = formatWithSpaces(code);
+            if (formatted.length <= 24) { // 20位 + 4个空格 = 24
+                return '<div class="code-line">' + formatted + '</div>';
+            }
+            // 前20位（包含空格后是24个字符）
+            var line1 = formatted.substring(0, 24).trim();
+            // 后12位
+            var line2 = formatted.substring(24).trim();
+            return '<div class="code-line">' + line1 + '</div>' +
+                   '<div class="code-line">' + line2 + '</div>';
+        }
+        
+        // 开始转换
+        function convertCodes() {
+            try {
+                var input = document.getElementById('hexInput').value;
+                if (!input || input.trim().length === 0) {
+                    alert('Please Enter Hexadecimal Code!');
+                    return;
+                }
+                
+                document.getElementById('resultSection').innerHTML = '';
+                itemCounter = 0;
+                
+                pendingCodes = splitInput(input);
+                processingIndex = 0;
+                
+                if (pendingCodes.length > 0) {
+                    processNextCode();
+                }
+            } catch (error) {
+                alert('Conversion error: ' + error.message);
+                console.error(error);
+            }
+        }
+        
+        // 处理下一个代码
+        function processNextCode() {
+            if (processingIndex >= pendingCodes.length) {
+                return;
+            }
+            
+            var originalCode = pendingCodes[processingIndex];
+            var displayCode = originalCode;
+            var cleanCode = removeSpaces(originalCode);
+            
+            if (!isValidHex(cleanCode)) {
+                displayError(displayCode, 'Invalid hexadecimal code');
+                processingIndex++;
+                if (processingIndex < pendingCodes.length) {
+                    setTimeout(function() { processNextCode(); }, 100);
+                }
+                return;
+            }
+            
+            if (cleanCode.length !== 32) {
+                currentCode = cleanCode;
+                currentOriginalCode = displayCode;
+                showWarning(displayCode, cleanCode);
+                return;
+            }
+            
+            processCode(cleanCode, displayCode, false);
+            processingIndex++;
+            
+            if (processingIndex < pendingCodes.length) {
+                setTimeout(function() { processNextCode(); }, 100);
+            }
+        }
+        
+        // 显示警告对话框
+        function showWarning(displayCode, cleanCode) {
+            var modal = document.getElementById('warningModal');
+            var message = document.getElementById('modalMessage');
+            message.innerHTML = 
+                '<p><strong>Code:</strong> ' + displayCode + '</p>' +
+                '<p><strong>Current Bit Length:</strong> ' + cleanCode.length + ' bits</p>' +
+                '<p><strong>Standard Bit Length:</strong> 32 bits</p>' +
+                '<p>This Code does not Meet the 32-bit Standard. Continue with Conversion?</p>';
+            modal.style.display = 'block';
+        }
+        
+        // 创建字段卡片
+        function createFieldCard(name, value, isHighlight) {
+            var className = 'field-card' + (isHighlight ? ' highlight' : '');
+            return '<div class="' + className + '">' +
+                   '<div class="field-name">' + name + '</div>' +
+                   '<div class="field-value">' + value + '</div>' +
+                   '</div>';
+        }
+        
+        // 处理单个代码转换
+        function processCode(code, displayCode, isWarned) {
+            try {
+                var itemId = itemCounter++;
+                var resultSection = document.getElementById('resultSection');
+                var resultDiv = document.createElement('div');
+                resultDiv.className = isWarned ? 'code-item code-warning' : 'code-item';
+                
+                var html = '';
+                
+                if (isWarned) {
+                    html += '<div class="warning-text">⚠️ Warning: This code is ' + code.length + ' bits, not the standard 32 bits</div>';
+                }
+                
+                html += '<div class="result-layout">';
+                
+                // 第一列：原始代码（分两行显示，每4位一个空格）
+                var cleanDisplayCode = removeSpaces(displayCode);
+                html += '<div class="original-code-section">' +
+                       '<div class="section-title">📄 Original Code</div>' +
+                       '<div class="section-content">' +
+                       '<div class="original-code-display">' + 
+                       formatOriginalCode(cleanDisplayCode) +
+                       '</div>' +
+                       '</div></div>';
+                
+                // 第二列：转换过程
+                var results = {};
+                var hiddenCards = '';
+                
+                // 计算是否有隐藏字段
+                var hasHiddenFields = code.length > 20;
+                
+                html += '<div class="conversion-section">' +
+                       '<div class="section-title">';
+                
+                if (hasHiddenFields) {
+                    html += '<div class="section-title-with-toggle">' +
+                           '🔄 Conversion Process' +
+                           '</div>' +
+                           '<button class="toggle-btn" onclick="toggleExpand(' + itemId + ')" title="Expand/Collapse more fields">' +
+                           '<span class="toggle-icon" id="icon-' + itemId + '">▼</span>' +
+                           '</button>';
+                } else {
+                    html += '🔄 Conversion Process';
+                }
+                
+                html += '</div>' +
+                       '<div class="section-content">' +
+                       '<div class="fields-grid">';
+                
+                // 第一行：LotID、WaferID、DIE_X、DIE_Y
+                if (code.length >= 12) {
+                    var lotID = '';
+                    for (var i = 0; i < 12; i += 2) {
+                        var hexByte = code.substring(i, i + 2);
+                        var charCode = parseInt(hexByte, 16);
+                        lotID += String.fromCharCode(charCode);
+                    }
+                    results.lotID = lotID;
+                    html += createFieldCard('LotID', lotID, true);
+                }
+                
+                if (code.length >= 14) {
+                    results.waferID = parseInt(code.substring(12, 14), 16);
+                    html += createFieldCard('WaferID', results.waferID, true);
+                }
+                
+                if (code.length >= 16) {
+                    results.dieX = parseInt(code.substring(14, 16), 16);
+                    html += createFieldCard('DIE_X', results.dieX, true);
+                }
+                
+                if (code.length >= 20) {
+                    results.dieY = parseInt(code.substring(18, 20), 16);
+                    html += createFieldCard('DIE_Y', results.dieY, true);
+                }
+                
+                html += '</div>';
+                
+                // 隐藏的字段
+                if (code.length >= 18) {
+                    results.bufferID1 = parseInt(code.substring(16, 18), 16);
+                    hiddenCards += createFieldCard('BufferID_1', results.bufferID1, false);
+                }
+                
+                var bufferIndex = 2;
+                for (var i = 20; i < code.length; i += 2) {
+                    if (i + 2 <= code.length) {
+                        var bufferValue = parseInt(code.substring(i, i + 2), 16);
+                        hiddenCards += createFieldCard('Buffer_' + bufferIndex, bufferValue, false);
+                        bufferIndex++;
+                    }
+                }
+                
+                if (hiddenCards) {
+                    html += '<div class="expand-section" id="expand-' + itemId + '">' +
+                           '<div class="fields-grid-expand">' + hiddenCards + '</div>' +
+                           '</div>';
+                }
+                
+                html += '</div></div>';
+                
+                // 第三列：ECID
+                html += '<div class="ecid-section">' +
+                       '<div class="section-title">🎯 ECID</div>' +
+                       '<div class="section-content">';
+                
+                if (results.lotID && results.waferID !== undefined && results.dieX !== undefined && results.dieY !== undefined) {
+                    var ecid = results.lotID + '_' + results.waferID + '_' + results.dieX + '_' + results.dieY;
+                    html += '<div class="ecid-display">' +
+                           '<div class="ecid-value">' + ecid + '</div>' +
+                           '</div>';
+                }
+                
+                html += '</div></div>';
+                html += '</div>';
+                
+                resultDiv.innerHTML = html;
+                resultSection.appendChild(resultDiv);
+                
+            } catch (error) {
+                alert('Code processing error: ' + error.message);
+                console.error(error);
+            }
+        }
+        
+        // 显示错误信息
+        function displayError(code, message) {
+            var resultSection = document.getElementById('resultSection');
+            var resultDiv = document.createElement('div');
+            resultDiv.className = 'code-item code-warning';
+            resultDiv.innerHTML = 
+                '<div class="section-title">Original Code: ' + code + '</div>' +
+                '<div class="warning-text">❌ ' + message + '</div>';
+            resultSection.appendChild(resultDiv);
+        }
+        
+        // 绑定事件监听器
+        document.getElementById('convertBtn').addEventListener('click', convertCodes);
+        document.getElementById('clearBtn').addEventListener('click', clearAll);
+        document.getElementById('confirmBtn').addEventListener('click', confirmConvert);
+        document.getElementById('cancelBtn').addEventListener('click', closeModal);
+        
+        // 点击模态框外部关闭
+        window.onclick = function(event) {
+            var modal = document.getElementById('warningModal');
+            if (event.target == modal) {
+                closeModal();
+            }
+        }
+    </script>
+</body>
+</html>
