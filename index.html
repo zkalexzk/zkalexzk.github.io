@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CHIPID解析工具</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Hiragino Sans GB",
+                         "Microsoft YaHei", "Helvetica Neue", Helvetica, Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            max-width: 600px;
+            width: 100%;
+            padding: 40px;
+            animation: slideIn 0.4s ease-out;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 10px;
+            font-size: 28px;
+            font-weight: 600;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 14px;
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            color: #555;
+            font-weight: 500;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+
+        input[type="text"] {
+            width: 100%;
+            padding: 14px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 16px;
+            font-family: 'Courier New', monospace;
+            transition: all 0.3s;
+            letter-spacing: 1px;
+        }
+
+        input[type="text"]:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        input[type="text"]::placeholder {
+            color: #aaa;
+            letter-spacing: normal;
+        }
+
+        button {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-top: 10px;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .result-container {
+            margin-top: 30px;
+            padding: 20px;
+            border-radius: 8px;
+            display: none;
+            animation: fadeIn 0.4s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+            to {
+                opacity: 1;
+            }
+        }
+
+        .result-container.success {
+            background: #f0f9ff;
+            border: 2px solid #3b82f6;
+        }
+
+        .result-container.error {
+            background: #fef2f2;
+            border: 2px solid #ef4444;
+        }
+
+        .result-title {
+            font-weight: 600;
+            margin-bottom: 15px;
+            font-size: 16px;
+        }
+
+        .result-container.success .result-title {
+            color: #1e40af;
+        }
+
+        .result-container.error .result-title {
+            color: #b91c1c;
+        }
+
+        .result-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+        }
+
+        .result-item:last-child {
+            border-bottom: none;
+        }
+
+        .result-label {
+            font-weight: 500;
+            color: #555;
+        }
+
+        .result-value {
+            font-family: 'Courier New', monospace;
+            color: #333;
+            font-weight: 600;
+        }
+
+        .error-message {
+            color: #b91c1c;
+            line-height: 1.6;
+        }
+
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 0.8s linear infinite;
+            margin-right: 8px;
+            vertical-align: middle;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        .examples {
+            margin-top: 20px;
+            padding: 15px;
+            background: #f9fafb;
+            border-radius: 8px;
+            font-size: 13px;
+        }
+
+        .examples-title {
+            font-weight: 600;
+            color: #555;
+            margin-bottom: 8px;
+        }
+
+        .example-item {
+            color: #666;
+            margin: 5px 0;
+            cursor: pointer;
+            transition: color 0.2s;
+        }
+
+        .example-item:hover {
+            color: #667eea;
+        }
+
+        .example-code {
+            font-family: 'Courier New', monospace;
+            background: white;
+            padding: 4px 8px;
+            border-radius: 4px;
+            margin-left: 8px;
+        }
+
+        @media (max-width: 640px) {
+            .container {
+                padding: 24px;
+            }
+
+            h1 {
+                font-size: 24px;
+            }
+
+            .result-item {
+                flex-direction: column;
+                gap: 5px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔍 CHIPID解析工具</h1>
+        <p class="subtitle">解析32位十六进制CHIPID，提取Lot和Wafer信息 <small style="color: #999;">(v5.0)</small></p>
+
+        <div class="nav-tabs" style="display: flex; gap: 10px; margin-bottom: 30px; border-bottom: 2px solid #e0e0e0;">
+            <button class="tab active" style="padding: 12px 24px; background: none; border: none; color: #667eea; font-size: 16px; font-weight: 500; cursor: pointer; border-bottom: 3px solid #667eea;">单个解析</button>
+            <button class="tab" style="padding: 12px 24px; background: none; border: none; color: #666; font-size: 16px; font-weight: 500; cursor: pointer; border-bottom: 3px solid transparent;" onclick="window.location.href='batch-static.html'">批量解析</button>
+        </div>
+
+        <div class="input-group">
+            <label for="chipid">输入CHIPID (32位十六进制)</label>
+            <input
+                type="text"
+                id="chipid"
+                placeholder="例如: 414243313233050A14FF1E0000000000"
+                maxlength="32"
+            >
+        </div>
+
+        <button id="parseBtn" onclick="parseChipID()">
+            解析CHIPID
+        </button>
+
+        <div id="result" class="result-container"></div>
+
+        <div class="examples">
+            <div class="examples-title">示例CHIPID:</div>
+            <div class="example-item" onclick="fillExample('414243313233050A14FF1E0000000000')">
+                • ABC123, Wafer 5: <span class="example-code">414243313233050A14FF1E0000000000</span>
+            </div>
+            <div class="example-item" onclick="fillExample('4C4F54303031010F10FF200000000000')">
+                • LOT001, Wafer 1: <span class="example-code">4C4F54303031010F10FF200000000000</span>
+            </div>
+        </div>
+    </div>
+
+    <script src="chipid-parser.js"></script>
+    <script>
+        function fillExample(chipid) {
+            document.getElementById('chipid').value = chipid;
+        }
+
+        async function parseChipID() {
+            const chipidInput = document.getElementById('chipid');
+            const chipid = chipidInput.value.trim();
+            const parseBtn = document.getElementById('parseBtn');
+            const resultDiv = document.getElementById('result');
+
+            // 清空之前的结果
+            resultDiv.style.display = 'none';
+            resultDiv.className = 'result-container';
+
+            // 基本验证
+            if (!chipid) {
+                showError('请输入CHIPID');
+                return;
+            }
+
+            // 显示加载状态
+            parseBtn.disabled = true;
+            parseBtn.innerHTML = '<span class="loading"></span>解析中...';
+
+            // 使用本地JavaScript解析（无需后端）
+            try {
+                const result = ChipIDParser.parse(chipid);
+                showSuccess(result);
+            } catch (error) {
+                showError(error.message);
+            } finally {
+                parseBtn.disabled = false;
+                parseBtn.innerHTML = '解析CHIPID';
+            }
+        }
+
+        function showSuccess(data) {
+            const resultDiv = document.getElementById('result');
+            resultDiv.className = 'result-container success';
+
+            // 清空容器
+            resultDiv.innerHTML = '';
+
+            // 创建标题
+            const title = document.createElement('div');
+            title.className = 'result-title';
+            title.textContent = '✓ 解析成功';
+            resultDiv.appendChild(title);
+
+            // 创建结果项
+            const fields = [
+                { label: 'Lot ID:', value: data.lot },
+                { label: 'Wafer编号:', value: String(data.wafer) },
+                { label: 'X坐标:', value: String(data.x) },
+                { label: 'Y坐标:', value: String(data.y) },
+                { label: 'ECID:', value: data.ecid },
+                { label: '原始CHIPID:', value: data.raw }
+            ];
+
+            fields.forEach(field => {
+                const item = document.createElement('div');
+                item.className = 'result-item';
+
+                const label = document.createElement('span');
+                label.className = 'result-label';
+                label.textContent = field.label;
+
+                const value = document.createElement('span');
+                value.className = 'result-value';
+                value.textContent = field.value;
+
+                item.appendChild(label);
+                item.appendChild(value);
+                resultDiv.appendChild(item);
+            });
+
+            resultDiv.style.display = 'block';
+        }
+
+        function showError(message) {
+            const resultDiv = document.getElementById('result');
+            resultDiv.className = 'result-container error';
+
+            // 清空容器
+            resultDiv.innerHTML = '';
+
+            // 创建标题
+            const title = document.createElement('div');
+            title.className = 'result-title';
+            title.textContent = '✗ 解析失败';
+            resultDiv.appendChild(title);
+
+            // 创建错误消息
+            const errorMsg = document.createElement('div');
+            errorMsg.className = 'error-message';
+            errorMsg.textContent = message;
+            resultDiv.appendChild(errorMsg);
+
+            resultDiv.style.display = 'block';
+        }
+
+        // 支持回车键提交
+        document.getElementById('chipid').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                parseChipID();
+            }
+        });
+
+        // 自动转换为大写
+        document.getElementById('chipid').addEventListener('input', function(e) {
+            this.value = this.value.toUpperCase();
+        });
+    </script>
+</body>
+</html>

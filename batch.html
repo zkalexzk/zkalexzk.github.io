@@ -1,0 +1,530 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CHIPID批量解析工具</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Hiragino Sans GB",
+                         "Microsoft YaHei", "Helvetica Neue", Helvetica, Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            max-width: 1200px;
+            width: 100%;
+            margin: 0 auto;
+            padding: 40px;
+        }
+
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 10px;
+            font-size: 28px;
+            font-weight: 600;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 14px;
+        }
+
+        .nav-tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 30px;
+            border-bottom: 2px solid #e0e0e0;
+        }
+
+        .tab {
+            padding: 12px 24px;
+            background: none;
+            border: none;
+            color: #666;
+            font-size: 16px;
+            font-weight: 500;
+            cursor: pointer;
+            border-bottom: 3px solid transparent;
+            transition: all 0.3s;
+        }
+
+        .tab.active {
+            color: #667eea;
+            border-bottom-color: #667eea;
+        }
+
+        .tab:hover {
+            color: #667eea;
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            color: #555;
+            font-weight: 500;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+
+        textarea {
+            width: 100%;
+            padding: 14px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 14px;
+            font-family: 'Courier New', monospace;
+            transition: all 0.3s;
+            resize: vertical;
+            min-height: 200px;
+        }
+
+        textarea:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        button {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-top: 10px;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .stats {
+            display: flex;
+            gap: 20px;
+            margin: 20px 0;
+            padding: 15px;
+            background: #f9fafb;
+            border-radius: 8px;
+        }
+
+        .stat-item {
+            flex: 1;
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 24px;
+            font-weight: 700;
+            color: #667eea;
+        }
+
+        .stat-label {
+            font-size: 12px;
+            color: #666;
+            margin-top: 5px;
+        }
+
+        .results-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            display: none;
+        }
+
+        .results-table.show {
+            display: table;
+        }
+
+        .results-table th,
+        .results-table td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .results-table th {
+            background: #f9fafb;
+            font-weight: 600;
+            color: #555;
+            position: sticky;
+            top: 0;
+        }
+
+        .results-table td {
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+        }
+
+        .status-success {
+            color: #10b981;
+            font-weight: 600;
+        }
+
+        .status-error {
+            color: #ef4444;
+            font-weight: 600;
+        }
+
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 0.8s linear infinite;
+            margin-right: 8px;
+            vertical-align: middle;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .export-btn {
+            width: auto;
+            padding: 10px 20px;
+            margin-top: 10px;
+            margin-right: 10px;
+            display: inline-block;
+        }
+
+        .example-hint {
+            font-size: 12px;
+            color: #666;
+            margin-top: 5px;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 20px;
+            }
+
+            .results-table {
+                font-size: 11px;
+            }
+
+            .results-table th,
+            .results-table td {
+                padding: 8px 4px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔍 CHIPID批量解析工具</h1>
+        <p class="subtitle">批量解析多颗芯片的CHIPID信息 <small style="color: #999;">(v5.0)</small></p>
+
+        <div class="nav-tabs">
+            <button class="tab" onclick="window.location.href='index-static.html'">单个解析</button>
+            <button class="tab active">批量解析</button>
+        </div>
+
+        <div class="input-group">
+            <label for="chipids">输入多个CHIPID (每行一个，或用逗号/空格分隔)</label>
+            <textarea
+                id="chipids"
+                placeholder="例如：
+5536423930310A07000E000000400000
+414243313233050A14FF1E0000000000
+4C4F54303031010F10FF200000000000"></textarea>
+            <div class="example-hint">提示: 可以粘贴Excel/CSV数据，支持多种分隔符</div>
+        </div>
+
+        <button id="parseBtn" onclick="parseBatch()">批量解析</button>
+
+        <div id="stats" class="stats" style="display: none;">
+            <div class="stat-item">
+                <div class="stat-value" id="total-count">0</div>
+                <div class="stat-label">总数</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-value" id="success-count" style="color: #10b981;">0</div>
+                <div class="stat-label">成功</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-value" id="failed-count" style="color: #ef4444;">0</div>
+                <div class="stat-label">失败</div>
+            </div>
+        </div>
+
+        <div id="export-buttons" style="display: none; margin-top: 20px;">
+            <button class="export-btn" onclick="exportCSV()">导出CSV</button>
+            <button class="export-btn" onclick="exportExcel()">导出Excel</button>
+            <button class="export-btn" onclick="copyResults()">复制结果</button>
+        </div>
+
+        <table id="results-table" class="results-table">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>状态</th>
+                    <th>Lot ID</th>
+                    <th>Wafer</th>
+                    <th>X</th>
+                    <th>Y</th>
+                    <th>ECID</th>
+                    <th>原始CHIPID</th>
+                    <th>错误信息</th>
+                </tr>
+            </thead>
+            <tbody id="results-body">
+            </tbody>
+        </table>
+    </div>
+
+    <script src="chipid-parser.js"></script>
+    <script>
+        let currentResults = [];
+
+        async function parseBatch() {
+            const textarea = document.getElementById('chipids');
+            const input = textarea.value.trim();
+            const parseBtn = document.getElementById('parseBtn');
+            const resultsTable = document.getElementById('results-table');
+            const resultsBody = document.getElementById('results-body');
+            const statsDiv = document.getElementById('stats');
+            const exportButtons = document.getElementById('export-buttons');
+
+            if (!input) {
+                alert('请输入至少一个CHIPID');
+                return;
+            }
+
+            // 解析输入 - 支持换行、逗号、空格等分隔符
+            const chipids = input
+                .split(/[\n,;\s]+/)
+                .map(s => s.trim())
+                .filter(s => s.length > 0);
+
+            if (chipids.length === 0) {
+                alert('未找到有效的CHIPID');
+                return;
+            }
+
+            // 显示加载状态
+            parseBtn.disabled = true;
+            parseBtn.innerHTML = '<span class="loading"></span>解析中...';
+            resultsBody.innerHTML = '';
+            resultsTable.classList.remove('show');
+            statsDiv.style.display = 'none';
+            exportButtons.style.display = 'none';
+
+            // 使用本地JavaScript解析（无需后端）
+            try {
+                const data = ChipIDParser.parseBatch(chipids);
+                currentResults = data.results;
+                displayResults(data);
+            } catch (error) {
+                alert(`解析失败: ${error.message}`);
+            } finally {
+                parseBtn.disabled = false;
+                parseBtn.innerHTML = '批量解析';
+            }
+        }
+
+        function displayResults(data) {
+            const resultsBody = document.getElementById('results-body');
+            const resultsTable = document.getElementById('results-table');
+            const statsDiv = document.getElementById('stats');
+            const exportButtons = document.getElementById('export-buttons');
+
+            // 更新统计
+            document.getElementById('total-count').textContent = data.total;
+            document.getElementById('success-count').textContent = data.succeeded;
+            document.getElementById('failed-count').textContent = data.failed;
+            statsDiv.style.display = 'flex';
+            exportButtons.style.display = 'block';
+
+            // 显示结果表格
+            resultsBody.innerHTML = '';
+            data.results.forEach(result => {
+                const row = document.createElement('tr');
+
+                if (result.success) {
+                    const d = result.data;
+                    row.innerHTML = `
+                        <td>${result.index}</td>
+                        <td class="status-success">✓ 成功</td>
+                        <td>${escapeText(d.lot)}</td>
+                        <td>${d.wafer}</td>
+                        <td>${d.x}</td>
+                        <td>${d.y}</td>
+                        <td>${escapeText(d.ecid)}</td>
+                        <td>${escapeText(d.raw)}</td>
+                        <td>-</td>
+                    `;
+                } else {
+                    row.innerHTML = `
+                        <td>${result.index}</td>
+                        <td class="status-error">✗ 失败</td>
+                        <td colspan="6">${escapeText(result.input || '')}</td>
+                        <td>${escapeText(result.error)}</td>
+                    `;
+                }
+
+                resultsBody.appendChild(row);
+            });
+
+            resultsTable.classList.add('show');
+        }
+
+        function escapeText(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        function exportCSV() {
+            const rows = [['序号', '状态', 'Lot ID', 'Wafer', 'X', 'Y', 'ECID', '原始CHIPID', '错误信息']];
+
+            currentResults.forEach(result => {
+                if (result.success) {
+                    const d = result.data;
+                    rows.push([
+                        result.index,
+                        '成功',
+                        d.lot,
+                        d.wafer,
+                        d.x,
+                        d.y,
+                        d.ecid,
+                        d.raw,
+                        ''
+                    ]);
+                } else {
+                    rows.push([
+                        result.index,
+                        '失败',
+                        '',
+                        '',
+                        '',
+                        '',
+                        '',
+                        result.input || '',
+                        result.error
+                    ]);
+                }
+            });
+
+            const csvContent = rows.map(row => row.map(cell => `"${cell}"`).join(',')).join('\n');
+            const blob = new Blob(['\ufeff' + csvContent], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = `chipid_results_${Date.now()}.csv`;
+            link.click();
+        }
+
+        function exportExcel() {
+            // 简化版：导出为制表符分隔的文本，可在Excel中打开
+            const rows = [['序号', '状态', 'Lot ID', 'Wafer', 'X', 'Y', 'ECID', '原始CHIPID', '错误信息']];
+
+            currentResults.forEach(result => {
+                if (result.success) {
+                    const d = result.data;
+                    rows.push([
+                        result.index,
+                        '成功',
+                        d.lot,
+                        d.wafer,
+                        d.x,
+                        d.y,
+                        d.ecid,
+                        d.raw,
+                        ''
+                    ]);
+                } else {
+                    rows.push([
+                        result.index,
+                        '失败',
+                        '',
+                        '',
+                        '',
+                        '',
+                        '',
+                        result.input || '',
+                        result.error
+                    ]);
+                }
+            });
+
+            const tsvContent = rows.map(row => row.join('\t')).join('\n');
+            const blob = new Blob(['\ufeff' + tsvContent], { type: 'text/plain;charset=utf-8;' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = `chipid_results_${Date.now()}.xls`;
+            link.click();
+        }
+
+        function copyResults() {
+            const rows = [['序号', '状态', 'Lot ID', 'Wafer', 'X', 'Y', 'ECID', '原始CHIPID', '错误信息']];
+
+            currentResults.forEach(result => {
+                if (result.success) {
+                    const d = result.data;
+                    rows.push([
+                        result.index,
+                        '成功',
+                        d.lot,
+                        d.wafer,
+                        d.x,
+                        d.y,
+                        d.ecid,
+                        d.raw,
+                        ''
+                    ]);
+                } else {
+                    rows.push([
+                        result.index,
+                        '失败',
+                        '',
+                        '',
+                        '',
+                        '',
+                        '',
+                        result.input || '',
+                        result.error
+                    ]);
+                }
+            });
+
+            const textContent = rows.map(row => row.join('\t')).join('\n');
+            navigator.clipboard.writeText(textContent).then(() => {
+                alert('结果已复制到剪贴板，可直接粘贴到Excel');
+            }).catch(err => {
+                alert('复制失败: ' + err.message);
+            });
+        }
+    </script>
+</body>
+</html>
