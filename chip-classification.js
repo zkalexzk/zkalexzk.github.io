@@ -39,7 +39,7 @@ const ChipClassificationDB = {
         { lot: "U6B901", wafers: [9, 10, 11, 12, 13, 14, 16, 17], priority: "Hot Run", status: "可靠性实验芯片", description: "ATE测试，覆盖率90%" },
 
         // QS1407
-        { lot: "U6B903", wafers: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15], priority: "Hot Run", status: "QS1407", description: "ATE测试，覆盖率90%" }
+        { lot: "U6B903", wafers: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15], priority: "Hot Run", status: "QS1407", description: "ATE测试，覆盖率95%" }
     ],
 
     /**
