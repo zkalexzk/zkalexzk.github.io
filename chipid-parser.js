@@ -78,6 +78,11 @@ class ChipIDParser {
             result.priority = classification.priority;
             result.status = classification.status;
             result.description = classification.description;
+        } else {
+            // 未找到分类，默认为普通量产芯片
+            result.priority = "Normal Production";
+            result.status = "量产";
+            result.description = "正常量产芯片，覆盖率99+%";
         }
 
         return result;

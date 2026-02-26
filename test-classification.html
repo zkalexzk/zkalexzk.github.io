@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>分类系统测试</title>
+    <style>
+        body {
+            font-family: 'Courier New', monospace;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .test-case {
+            background: white;
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 8px;
+            border-left: 4px solid #667eea;
+        }
+        .test-title {
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 10px;
+        }
+        .result {
+            padding: 10px;
+            background: #f9fafb;
+            border-radius: 4px;
+            margin-top: 5px;
+        }
+        .success {
+            color: #10b981;
+        }
+        .error {
+            color: #ef4444;
+        }
+    </style>
+</head>
+<body>
+    <h1>🧪 芯片分类系统测试</h1>
+    <div id="test-results"></div>
+
+    <script src="chip-classification.js"></script>
+    <script src="chipid-parser.js"></script>
+    <script>
+        const testCases = [
+            {
+                name: "ES96早期工程芯片 (U6B900 #4)",
+                chipid: "553642393030040A14FF1E0000000000",
+                expected: {
+                    lot: "U6B900",
+                    wafer: 4,
+                    priority: "Super Hot Run",
+                    status: "ES96早期工程芯片",
+                    description: "仅LBIST测试，覆盖率70%"
+                }
+            },
+            {
+                name: "ES96早期工程芯片 (U6B900 #6)",
+                chipid: "553642393030060A14FF1E0000000000",
+                expected: {
+                    lot: "U6B900",
+                    wafer: 6,
+                    priority: "Super Hot Run",
+                    status: "ES96早期工程芯片",
+                    description: "仅LBIST测试，覆盖率70%"
+                }
+            },
+            {
+                name: "Golden wafer (U6B902 #1)",
+                chipid: "553642393032010D14FF1E0000000000",
+                expected: {
+                    lot: "U6B902",
+                    wafer: 1,
+                    priority: "Hot Run",
+                    status: "Golden wafer",
+                    description: "参考wafer不出货"
+                }
+            },
+            {
+                name: "可靠性实验芯片 (U6B901 #9)",
+                chipid: "553642393031090914FF1E0000000000",
+                expected: {
+                    lot: "U6B901",
+                    wafer: 9,
+                    priority: "Hot Run",
+                    status: "可靠性实验芯片",
+                    description: "ATE测试，覆盖率90%"
+                }
+            },
+            {
+                name: "普通量产芯片 (U6B999 #10 - 不在数据库中)",
+                chipid: "5536423939390A0A14FF1E0000000000",
+                expected: {
+                    lot: "U6B999",
+                    wafer: 10,
+                    priority: "Normal Production",
+                    status: "量产",
+                    description: "正常量产芯片，覆盖率99+%"
+                }
+            }
+        ];
+
+        const resultsDiv = document.getElementById('test-results');
+
+        // 测试ChipClassificationDB是否已加载
+        const testDiv1 = document.createElement('div');
+        testDiv1.className = 'test-case';
+        testDiv1.innerHTML = `
+            <div class="test-title">系统检查</div>
+            <div class="result">
+                ChipClassificationDB 已加载: <span class="${typeof ChipClassificationDB !== 'undefined' ? 'success' : 'error'}">${typeof ChipClassificationDB !== 'undefined' ? '✓ 是' : '✗ 否'}</span><br>
+                ChipIDParser 已加载: <span class="${typeof ChipIDParser !== 'undefined' ? 'success' : 'error'}">${typeof ChipIDParser !== 'undefined' ? '✓ 是' : '✗ 否'}</span><br>
+                数据库记录数: ${typeof ChipClassificationDB !== 'undefined' ? ChipClassificationDB.data.length : 'N/A'}
+            </div>
+        `;
+        resultsDiv.appendChild(testDiv1);
+
+        // 运行测试用例
+        testCases.forEach((testCase, index) => {
+            const testDiv = document.createElement('div');
+            testDiv.className = 'test-case';
+
+            let resultHTML = `<div class="test-title">测试 ${index + 1}: ${testCase.name}</div>`;
+            resultHTML += `<div>CHIPID: ${testCase.chipid}</div>`;
+
+            try {
+                const result = ChipIDParser.parse(testCase.chipid);
+
+                // 检查每个字段
+                const checks = {
+                    'Lot ID': result.lot === testCase.expected.lot,
+                    'Wafer': result.wafer === testCase.expected.wafer,
+                    'Priority': result.priority === testCase.expected.priority,
+                    'Status': result.status === testCase.expected.status,
+                    'Description': result.description === testCase.expected.description
+                };
+
+                const allPassed = Object.values(checks).every(v => v);
+
+                resultHTML += '<div class="result">';
+                resultHTML += `<strong class="${allPassed ? 'success' : 'error'}">${allPassed ? '✓ 测试通过' : '✗ 测试失败'}</strong><br><br>`;
+
+                resultHTML += `期望值:<br>`;
+                resultHTML += `  Lot: ${testCase.expected.lot}<br>`;
+                resultHTML += `  Wafer: ${testCase.expected.wafer}<br>`;
+                resultHTML += `  Priority: ${testCase.expected.priority}<br>`;
+                resultHTML += `  Status: ${testCase.expected.status}<br>`;
+                resultHTML += `  Description: ${testCase.expected.description}<br><br>`;
+
+                resultHTML += `实际值:<br>`;
+                resultHTML += `  Lot: ${result.lot} <span class="${checks['Lot ID'] ? 'success' : 'error'}">${checks['Lot ID'] ? '✓' : '✗'}</span><br>`;
+                resultHTML += `  Wafer: ${result.wafer} <span class="${checks['Wafer'] ? 'success' : 'error'}">${checks['Wafer'] ? '✓' : '✗'}</span><br>`;
+                resultHTML += `  Priority: ${result.priority} <span class="${checks['Priority'] ? 'success' : 'error'}">${checks['Priority'] ? '✓' : '✗'}</span><br>`;
+                resultHTML += `  Status: ${result.status} <span class="${checks['Status'] ? 'success' : 'error'}">${checks['Status'] ? '✓' : '✗'}</span><br>`;
+                resultHTML += `  Description: ${result.description} <span class="${checks['Description'] ? 'success' : 'error'}">${checks['Description'] ? '✓' : '✗'}</span><br>`;
+                resultHTML += `  ECID: ${result.ecid}<br>`;
+
+                resultHTML += '</div>';
+
+            } catch (error) {
+                resultHTML += `<div class="result error">✗ 解析错误: ${error.message}</div>`;
+            }
+
+            testDiv.innerHTML = resultHTML;
+            resultsDiv.appendChild(testDiv);
+        });
+
+        // 总结
+        const summaryDiv = document.createElement('div');
+        summaryDiv.className = 'test-case';
+        summaryDiv.style.borderColor = '#10b981';
+        summaryDiv.innerHTML = `
+            <div class="test-title">测试完成</div>
+            <div class="result">
+                请检查上述每个测试用例的结果。<br>
+                如果所有测试都显示 <span class="success">✓ 测试通过</span>，说明分类系统工作正常。
+            </div>
+        `;
+        resultsDiv.appendChild(summaryDiv);
+    </script>
+</body>
+</html>

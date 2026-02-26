@@ -4,34 +4,49 @@
 const ChipClassificationDB = {
     // 数据格式：Lot# -> [wafer范围列表]
     data: [
-        { lot: "U6B902", wafers: [1], priority: "HR", status: "Golden wafer" },
-        { lot: "U6B900", wafers: [13], priority: "HR", status: "Golden wafer" },
-        { lot: "U6B900", wafers: [7], priority: "SHR", status: "Golden wafer" },
-        { lot: "U6B900", wafers: [1], priority: "SHR", status: "Blind build" },
-        { lot: "U6B900", wafers: [2, 3], priority: "SHR", status: "Blind build" },
-        { lot: "U6B900", wafers: [4, 6], priority: "SHR", status: "ES96" },
-        { lot: "U6B900", wafers: [21, 22], priority: "HR", status: "Corner" },
-        { lot: "U6B900", wafers: [14, 15, 16, 17, 18], priority: "HR", status: "ES266" },
-        { lot: "U6B900", wafers: [20, 23], priority: "HR", status: "Corner" },
-        { lot: "U6B900", wafers: [24, 25], priority: "HR", status: "Corner" },
-        { lot: "U6B900", wafers: [5], priority: "SHR", status: "Hold" },
-        { lot: "U6B900", wafers: [19], priority: "HR", status: "Hold" },
-        { lot: "U6B900", wafers: [8, 9, 10, 11, 12], priority: "SHR", status: "RA" },
-        { lot: "U6B902", wafers: [10, 11, 12, 13, 14, 15, 16, 17], priority: "HR", status: "RA" },
-        { lot: "U6B901", wafers: [1, 2, 3, 4, 5, 6, 7, 8, 18, 19, 20, 21, 22, 23, 24, 25], priority: "HR", status: "RA->ES" },
-        { lot: "U6B902", wafers: [2, 3, 4, 5, 6, 7, 8, 9], priority: "HR", status: "RA" },
-        { lot: "U6B902", wafers: [18, 19, 20, 21, 22, 23], priority: "HR", status: "RA" },
-        { lot: "U92R35", wafers: [4], priority: "HR", status: "RA" },
-        { lot: "U6B901", wafers: [9, 10, 11, 12, 13, 14, 16, 17], priority: "HR", status: "RA->ES" },
-        { lot: "U6B902", wafers: [24, 25], priority: "HR", status: "Hold" },
-        { lot: "U6B903", wafers: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15], priority: "HR", status: "QS1407+RA" }
+        // Golden wafer - 参考wafer不出货
+        { lot: "U6B902", wafers: [1], priority: "Hot Run", status: "Golden wafer", description: "参考wafer不出货" },
+        { lot: "U6B900", wafers: [13], priority: "Hot Run", status: "Golden wafer", description: "参考wafer不出货" },
+        { lot: "U6B900", wafers: [7], priority: "Super Hot Run", status: "Golden wafer", description: "参考wafer不出货" },
+
+        // 盲封 - 未ATE测试，仅实验室测试
+        { lot: "U6B900", wafers: [1], priority: "Super Hot Run", status: "盲封", description: "未ATE测试，仅实验室测试" },
+        { lot: "U6B900", wafers: [2, 3], priority: "Super Hot Run", status: "盲封", description: "未ATE测试，仅实验室测试" },
+
+        // ES96早期工程芯片
+        { lot: "U6B900", wafers: [4, 6], priority: "Super Hot Run", status: "ES96早期工程芯片", description: "仅LBIST测试，覆盖率70%" },
+
+        // Corner - 工艺Corner芯片，纯实验
+        { lot: "U6B900", wafers: [21, 22], priority: "Hot Run", status: "Corner", description: "工艺Corner芯片，纯实验" },
+        { lot: "U6B900", wafers: [20, 23], priority: "Hot Run", status: "Corner", description: "工艺Corner芯片，纯实验" },
+        { lot: "U6B900", wafers: [24, 25], priority: "Hot Run", status: "Corner", description: "工艺Corner芯片，纯实验" },
+
+        // ES266早期工程芯片
+        { lot: "U6B900", wafers: [14, 15, 16, 17, 18], priority: "Hot Run", status: "ES266早期工程芯片", description: "ATE测试，覆盖率80%" },
+
+        // 问题wafer - 良率问题未出货
+        { lot: "U6B900", wafers: [5], priority: "Super Hot Run", status: "问题wafer", description: "良率问题未出货" },
+        { lot: "U6B900", wafers: [19], priority: "Hot Run", status: "问题wafer", description: "良率问题未出货" },
+        { lot: "U6B902", wafers: [24, 25], priority: "Hot Run", status: "问题wafer", description: "良率问题未出货" },
+
+        // 可靠性实验芯片 - ATE测试，覆盖率90%
+        { lot: "U6B900", wafers: [8, 9, 10, 11, 12], priority: "Super Hot Run", status: "可靠性实验芯片", description: "ATE测试，覆盖率90%" },
+        { lot: "U6B902", wafers: [10, 11, 12, 13, 14, 15, 16, 17], priority: "Hot Run", status: "可靠性实验芯片", description: "ATE测试，覆盖率90%" },
+        { lot: "U6B901", wafers: [1, 2, 3, 4, 5, 6, 7, 8, 18, 19, 20, 21, 22, 23, 24, 25], priority: "Hot Run", status: "可靠性实验芯片", description: "ATE测试，覆盖率90%" },
+        { lot: "U6B902", wafers: [2, 3, 4, 5, 6, 7, 8, 9], priority: "Hot Run", status: "可靠性实验芯片", description: "ATE测试，覆盖率90%" },
+        { lot: "U6B902", wafers: [18, 19, 20, 21, 22, 23], priority: "Hot Run", status: "可靠性实验芯片", description: "ATE测试，覆盖率90%" },
+        { lot: "U92R35", wafers: [4], priority: "Hot Run", status: "可靠性实验芯片", description: "ATE测试，覆盖率90%" },
+        { lot: "U6B901", wafers: [9, 10, 11, 12, 13, 14, 16, 17], priority: "Hot Run", status: "可靠性实验芯片", description: "ATE测试，覆盖率90%" },
+
+        // QS1407
+        { lot: "U6B903", wafers: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15], priority: "Hot Run", status: "QS1407", description: "ATE测试，覆盖率90%" }
     ],
 
     /**
      * 查询芯片分类信息
      * @param {string} lot - Lot ID
      * @param {number} wafer - Wafer编号
-     * @returns {object|null} 分类信息或null
+     * @returns {object|null} 分类信息或null（返回null表示是普通量产芯片）
      */
     lookup(lot, wafer) {
         // 标准化Lot ID（去除空格，转大写）
@@ -42,33 +57,13 @@ const ChipClassificationDB = {
                 return {
                     priority: entry.priority,
                     status: entry.status,
-                    description: this.getStatusDescription(entry.status)
+                    description: entry.description
                 };
             }
         }
 
+        // 未找到匹配，返回null（表示是普通量产芯片）
         return null;
-    },
-
-    /**
-     * 获取Status的描述信息
-     * @param {string} status - 状态名称
-     * @returns {string} 描述信息
-     */
-    getStatusDescription(status) {
-        const descriptions = {
-            "Golden wafer": "金片 - 最高质量标准片",
-            "Blind build": "盲测批次",
-            "ES96": "ES96早期工程批芯片",
-            "ES266": "ES266工程批芯片",
-            "Corner": "Corner测试批次",
-            "Hold": "暂停/保留批次",
-            "RA": "可靠性分析批次",
-            "RA->ES": "可靠性分析转工程样品",
-            "QS1407+RA": "QS1407质量标准+可靠性分析"
-        };
-
-        return descriptions[status] || status;
     },
 
     /**
@@ -78,11 +73,33 @@ const ChipClassificationDB = {
      */
     getPriorityDescription(priority) {
         const descriptions = {
-            "HR": "高可靠性 (High Reliability)",
-            "SHR": "超高可靠性 (Super High Reliability)"
+            "Hot Run": "快速制程",
+            "Super Hot Run": "超快制程",
+            "Normal Production": "普通量产制程"
         };
 
-        return descriptions[priority] || priority;
+        return descriptions[priority] || "";
+    },
+
+    /**
+     * 获取Status的中文说明
+     * @param {string} status - 状态名称
+     * @returns {string} 说明
+     */
+    getStatusInfo(status) {
+        const info = {
+            "Golden wafer": "参考wafer不出货",
+            "盲封": "未ATE测试，仅实验室测试",
+            "ES96早期工程芯片": "仅LBIST测试，覆盖率70%",
+            "ES266早期工程芯片": "ATE测试，覆盖率80%",
+            "Corner": "工艺Corner芯片，纯实验",
+            "问题wafer": "良率问题未出货",
+            "可靠性实验芯片": "ATE测试，覆盖率90%",
+            "QS1407": "ATE测试，覆盖率90%",
+            "量产": "正常量产芯片，覆盖率99+%"
+        };
+
+        return info[status] || "";
     }
 };
 
